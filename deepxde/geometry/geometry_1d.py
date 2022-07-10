@@ -1,37 +1,29 @@
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import numpy as np
-from SALib.sample import sobol_sequence
 
 from .geometry import Geometry
+from .sampler import sample
 from .. import config
 
 
 class Interval(Geometry):
     def __init__(self, l, r):
-        super(Interval, self).__init__(1, (np.array([l]), np.array([r])), r - l)
+        super().__init__(1, (np.array([l]), np.array([r])), r - l)
         self.l, self.r = l, r
 
     def inside(self, x):
-        return self.l <= x[0] <= self.r
+        return np.logical_and(self.l <= x, x <= self.r).flatten()
 
     def on_boundary(self, x):
-        return np.any(np.isclose(x, [self.l, self.r]))
+        return np.any(np.isclose(x, [self.l, self.r]), axis=-1)
 
     def distance2boundary(self, x, dirn):
-        return x[0] - self.l if dirn < 0 else self.r - x[0]
+        return x - self.l if dirn < 0 else self.r - x
 
     def mindist2boundary(self, x):
         return min(np.amin(x - self.l), np.amin(self.r - x))
 
     def boundary_normal(self, x):
-        if np.isclose(x[0], self.l):
-            return np.array([-1])
-        if np.isclose(x[0], self.r):
-            return np.array([1])
-        return np.array([0])
+        return -np.isclose(x, self.l).astype(config.real(np)) + np.isclose(x, self.r)
 
     def uniform_points(self, n, boundary=True):
         if boundary:
@@ -53,10 +45,7 @@ class Interval(Geometry):
         return np.exp(x) - eps
 
     def random_points(self, n, random="pseudo"):
-        if random == "pseudo":
-            x = np.random.rand(n, 1)
-        elif random == "sobol":
-            x = sobol_sequence.sample(n + 1, 1)[1:]
+        x = sample(n, 1, random)
         return (self.diam * x + self.l).astype(config.real(np))
 
     def uniform_boundary_points(self, n):
@@ -72,11 +61,10 @@ class Interval(Geometry):
         return np.random.choice([self.l, self.r], n)[:, None].astype(config.real(np))
 
     def periodic_point(self, x, component=0):
-        if np.isclose(x[0], self.l):
-            return np.array([self.r])
-        if np.isclose(x[0], self.r):
-            return np.array([self.l])
-        return x
+        tmp = np.copy(x)
+        tmp[np.isclose(x, self.l)] = self.r
+        tmp[np.isclose(x, self.r)] = self.l
+        return tmp
 
     def background_points(self, x, dirn, dist2npt, shift):
         """

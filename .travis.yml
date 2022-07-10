@@ -1,14 +1,12 @@
-dist: xenial
+# Reference: https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/use-conda-with-travis-ci.html
+dist: focal
 language: python
 python:
   # We don't actually use the Travis Python, but this keeps it organized.
-  - "2.7"
-  - "3.6"
   - "3.7"
   - "3.8"
+  - "3.9"
 install:
-  # code below is taken from https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/use-conda-with-travis-ci.html
-  - sudo apt-get update
   # We do this conditionally because it saves us some downloading if the
   # version is the same.
   - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
@@ -28,9 +26,16 @@ install:
   - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION matplotlib numpy scikit-learn scipy
   - conda activate test-environment
 
-  - conda install -c conda-forge salib
-  - conda install tensorflow
+  - conda install -c conda-forge scikit-optimize
+  - pip install tensorflow tensorflow-probability
+  - conda install pytorch cpuonly -c pytorch
+  - pip install jax flax optax
+  - pip install paddlepaddle
 
-# command to run tests
 script:
-  - python -c "import deepxde"
+  # Your test script goes here
+  - DDEBACKEND=tensorflow.compat.v1 python -c "import deepxde"
+  - DDEBACKEND=tensorflow python -c "import deepxde"
+  - DDEBACKEND=pytorch python -c "import deepxde"
+  - DDEBACKEND=jax python -c "import deepxde"
+  - DDEBACKEND=paddle python -c "import deepxde"

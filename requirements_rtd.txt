@@ -1,5 +1,0 @@
-matplotlib
-numpy
-salib
-scikit-learn
-scipy

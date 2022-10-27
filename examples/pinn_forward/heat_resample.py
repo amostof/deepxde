@@ -35,6 +35,8 @@ def gen_exact_solution():
 
     # Save solution:
     np.savez("heat_eq_data", x=x, t=t, usol=usol)
+    # Load solution:
+    data = np.load("heat_eq_data.npz")
 
 
 def gen_testdata():
@@ -78,6 +80,7 @@ ic = dde.icbc.IC(
     lambda x: np.sin(n * np.pi * x[:, 0:1] / L),
     lambda _, on_initial: on_initial,
 )
+pde_resampler = dde.callbacks.PDEPointResampler(period=10)
 
 # Define the PDE problem and configurations of the network:
 data = dde.data.TimePDE(
@@ -94,9 +97,9 @@ model = dde.Model(data, net)
 
 # Build and train the model:
 model.compile("adam", lr=1e-3)
-model.train(iterations=20000)
+model.train(epochs=200000, callbacks=[pde_resampler])
 model.compile("L-BFGS")
-losshistory, train_state = model.train()
+losshistory, train_state = model.train(callbacks=[pde_resampler])
 
 # Plot/print the results
 dde.saveplot(losshistory, train_state, issave=True, isplot=True)

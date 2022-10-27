@@ -6,7 +6,7 @@ Installation
 
 DeepXDE requires one of the following backend-specific dependencies to be installed:
 
-- TensorFlow 1.x: `TensorFlow <https://www.tensorflow.org>`_>=2.2.0
+- TensorFlow 1.x: `TensorFlow <https://www.tensorflow.org>`_>=2.7.0
 - TensorFlow 2.x: `TensorFlow <https://www.tensorflow.org>`_>=2.2.0, `TensorFlow Probability <https://www.tensorflow.org/probability>`_>=0.10.0
 - PyTorch: `PyTorch <https://pytorch.org>`_>=1.9.0
 - JAX: `JAX <https://jax.readthedocs.io>`_, `Flax <https://flax.readthedocs.io>`_, `Optax <https://optax.readthedocs.io>`_
@@ -70,12 +70,13 @@ DeepXDE supports TensorFlow 1.x (``tensorflow.compat.v1`` in TensorFlow 2.x), Te
 
     $ DDE_BACKEND=paddle python pde.py
 
-    - Or ``export DDE_BACKEND=BACKEND`` to set the global environment variable
+    - Or set the global environment variable ``DDE_BACKEND`` as ``BACKEND``. In Linux, this usually can be done via ``export DDE_BACKEND=BACKEND``; in Windows, set the environment variable ``DDE_BACKEND`` in System Settings
 
 * Modify the ``config.json`` file under "~/.deepxde":
 
     - The file has the content such as ``{"backend": "tensorflow.compat.v1"}``
     - You can also use ``python -m deepxde.backend.set_default_backend BACKEND`` to set the default backend
+    - In Windows, you can find ``config.json`` file under "C:/Users/Username/.deepxde" directory
 
 Currently ``BACKEND`` can be chosen from "tensorflow.compat.v1" (TensorFlow 1.x backend), "tensorflow" (TensorFlow 2.x backend), "pytorch" (PyTorch), "jax" (JAX), and "paddle" (PaddlePaddle). The default backend is TensorFlow 1.x.
 
